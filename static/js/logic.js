@@ -28,16 +28,12 @@ let map = L.map("mapid", {
 // Pass our map layers into our layers control and add the layers control to the map.
 L.control.layers(baseMaps).addTo(map);  
 
-let torontoData = "https://raw.githubusercontent.com/jonlev03-hub/Mapping_Earthquakes/main/torontoNeighborhoods.json";
+let torontoHoods = "https://raw.githubusercontent.com/jonlev03-hub/Mapping_Earthquakes/main/torontoNeighborhoods.json";
 
 
-let myStyle = {
-  color: "#ffffa1",
-  weight: 2
-}
 // Grabbing our GeoJSON data.
-d3.json(torontoData).then(function(data) {
+d3.json(torontoHoods).then(function(data) {
   console.log(data);
 // Creating a GeoJSON layer with the retrieved data.
 L.geoJSON(data).addTo(map);
-}).addTo(map)
+})
