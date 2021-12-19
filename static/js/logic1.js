@@ -30,6 +30,33 @@ L.control.layers(baseMaps).addTo(map);
 
 // Retrieve the earthquake GeoJSON data.
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(function(data) {
-  // Creating a GeoJSON layer with the retrieved data.
-  L.geoJSON(data).addTo(map);
-});
+  console.log(data)
+  function getRadius(magnitude) {
+    if (magnitude === 0) {
+      return 1;
+    }
+    return magnitude * 4;
+  }
+  function styleInfo(feature) {
+    return {
+      opacity: 1,
+      fillOpacity: 1,
+      fillColor: "#ffae42",
+      color: "#000000",
+      radius: getRadius(feature.properties.mag),
+      stroke: true,
+      weight: 0.5
+    };
+  }
+// Creating a GeoJSON layer with the retrieved data.
+L.geoJSON(data, {
+
+  // We turn each feature into a circleMarker on the map.
+  
+  pointToLayer: function(feature, latlng) {
+              return L.circleMarker(latlng);
+          },
+        // We set the style for each circleMarker using our styleInfo function.
+      style: styleInfo()
+      }).addTo(map);
+  });
