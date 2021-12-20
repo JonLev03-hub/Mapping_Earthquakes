@@ -13,11 +13,17 @@ attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap
     accessToken: API_KEY
 });
 
+// Create the earthquake layer for our map.
+let earthquakes = new L.layerGroup();
+let overlays = {
+  Earthquakes: earthquakes
+};
 // Create a base layer that holds both maps.
 let baseMaps = {
   light: light,
   Satelite: sateliteStreets
 };
+
 
 // Create the map object with a center and zoom level.
 let map = L.map("mapid", {
@@ -26,7 +32,7 @@ let map = L.map("mapid", {
   layers:[light]
 });
 // Pass our map layers into our layers control and add the layers control to the map.
-L.control.layers(baseMaps).addTo(map);  
+L.control.layers(baseMaps, overlays).addTo(map);  
 
 // Retrieve the earthquake GeoJSON data.
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(function(data) {
@@ -80,7 +86,7 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
           layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
         }
         }
-        ).addTo(map)
+        ).addTo(earthquakes)
     });
   let myStyle = {
     color: "#ffffa1",
