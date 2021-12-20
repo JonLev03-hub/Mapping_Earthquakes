@@ -13,11 +13,17 @@ attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap
     accessToken: API_KEY
 });
 
+// Create the earthquake layer for our map.
+let earthquakes = new L.layerGroup();
+let overlays = {
+  Earthquakes: earthquakes
+};
 // Create a base layer that holds both maps.
 let baseMaps = {
   light: light,
   Satelite: sateliteStreets
 };
+
 
 // Create the map object with a center and zoom level.
 let map = L.map("mapid", {
@@ -26,7 +32,7 @@ let map = L.map("mapid", {
   layers:[light]
 });
 // Pass our map layers into our layers control and add the layers control to the map.
-L.control.layers(baseMaps).addTo(map);  
+L.control.layers(baseMaps, overlays).addTo(map);  
 
 // Retrieve the earthquake GeoJSON data.
 d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson").then(function(data) {
@@ -34,7 +40,7 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
         return {
           opacity: 1,
           fillOpacity: 1,
-          fillColor: "#ffae42",
+          fillColor: getColor(feature.properties.mag),
           color: "#000000",
           radius: getRadius(feature.properties.mag),
           stroke: true,
@@ -47,6 +53,24 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
         }
         return magnitude * 4;
       }
+      function getColor(magnitude) {
+        if (magnitude > 5) {
+          return "#ea2c2c";
+        }
+        if (magnitude > 4) {
+          return "#ea822c";
+        }
+        if (magnitude > 3) {
+          return "#ee9c00";
+        }
+        if (magnitude > 2) {
+          return "#eecc00";
+        }
+        if (magnitude > 1) {
+          return "#d4ee00";
+        }
+        return "#98ee00";
+      }
   // Creating a GeoJSON layer with the retrieved data.
   L.geoJSON(data, {
 
@@ -57,10 +81,36 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
                 return L.circleMarker(latlng);
             },
           // We set the style for each circleMarker using our styleInfo function.
-        style: styleInfo
-        }).addTo(map);
+        style: styleInfo,
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
+        }
+        }
+        ).addTo(earthquakes)
     });
-  let myStyle = {
-    color: "#ffffa1",
-    weight: 2
-    }
+    let legend = L.control({
+      position: "bottomright"
+    });
+
+    legend.onAdd = function() {
+      let div = L.DomUtil.create("div", "info legend");
+      const magnitudes = [0, 1, 2, 3, 4, 5];
+     const colors = [
+  "#98ee00",
+  "#d4ee00",
+  "#eecc00",
+  "#ee9c00",
+  "#ea822c",
+  "#ea2c2c"
+];
+    // Looping through our intervals to generate a label with a colored square for each interval.
+   for (var i = 0; i < magnitudes.length; i++) {
+    console.log(colors[i]);
+    div.innerHTML +=
+      "<i style='background: " + colors[i] + "'></i> " +
+      magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>" : "+");
+ }
+  return div;
+};
+
+legend.addTo(map);
